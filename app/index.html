@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>今日の言葉</title>
+<meta name="description" content="毎日1つ、世界の名言・迷言・毒のある言葉を出典と解説つきで届けるアプリ">
+<meta name="theme-color" content="#f7f4ec">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="app-header">
+  <div class="header-inner">
+    <h1 class="app-title">今日の言葉</h1>
+    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="テーマ切替">テーマ：端末</button>
+  </div>
+  <nav class="app-nav" aria-label="メインナビゲーション">
+    <button type="button" data-nav="home" class="nav-btn is-active">ホーム</button>
+    <button type="button" data-nav="search" class="nav-btn">検索</button>
+    <button type="button" data-nav="favorites" class="nav-btn">お気に入り</button>
+    <button type="button" data-nav="history" class="nav-btn">履歴</button>
+  </nav>
+</header>
+
+<main class="app-main">
+  <!-- ホーム -->
+  <section id="view-home" class="view">
+    <p id="home-date" class="home-date"></p>
+    <div id="home-frame" class="quote-frame" role="button" tabindex="0" aria-label="詳細を開く"></div>
+    <div class="action-row">
+      <button id="home-fav" class="fav-btn" type="button" aria-label="お気に入り"></button>
+      <a id="home-share" class="share-link" href="#" target="_blank" rel="noopener">Xで共有</a>
+      <span id="home-progress" class="progress"></span>
+    </div>
+    <div class="section">
+      <h2 class="section-title">解説</h2>
+      <p id="home-meaning" class="body-text"></p>
+    </div>
+    <div class="section">
+      <h2 class="section-title">出典</h2>
+      <p id="home-source" class="body-text"></p>
+    </div>
+  </section>
+
+  <!-- 詳細 -->
+  <section id="view-detail" class="view" hidden>
+    <button id="detail-back" class="back-btn" type="button">← 戻る</button>
+    <div id="detail-frame" class="quote-frame"></div>
+    <p id="detail-bio" class="person-bio"></p>
+    <div class="action-row">
+      <button id="detail-fav" class="fav-btn" type="button" aria-label="お気に入り"></button>
+      <a id="detail-share" class="share-link" href="#" target="_blank" rel="noopener">Xで共有</a>
+    </div>
+    <div id="detail-sections"></div>
+    <div class="section" id="detail-same-wrap" hidden>
+      <h2 class="section-title">同じ人物の言葉</h2>
+      <div id="detail-same" class="list"></div>
+    </div>
+  </section>
+
+  <!-- 検索 -->
+  <section id="view-search" class="view" hidden>
+    <div class="search-box">
+      <input id="search-keyword" class="search-input" type="search" placeholder="人物名・言葉・タグで検索" autocomplete="off">
+      <div class="search-filters">
+        <label>大分類
+          <select id="search-group" class="search-select"></select>
+        </label>
+        <label>確度
+          <select id="search-grade" class="search-select">
+            <option value="">すべて</option>
+            <option value="A">A（出典確実）</option>
+            <option value="B">B（伝承あり）</option>
+            <option value="C">C（帰属に疑義）</option>
+          </select>
+        </label>
+      </div>
+    </div>
+    <p id="search-count" class="result-count"></p>
+    <div id="search-results" class="list"></div>
+  </section>
+
+  <!-- お気に入り -->
+  <section id="view-favorites" class="view" hidden>
+    <div id="favorites-list" class="list"></div>
+    <p id="favorites-empty" class="empty-note" hidden>お気に入りはまだありません。星ボタンで登録できます。</p>
+  </section>
+
+  <!-- 履歴 -->
+  <section id="view-history" class="view" hidden>
+    <div id="history-list" class="list"></div>
+    <p id="history-empty" class="empty-note" hidden>履歴はまだありません。</p>
+  </section>
+</main>
+
+<footer class="app-footer">
+  <p>今日の言葉 ― 毎日1つ、出典つきで。</p>
+</footer>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

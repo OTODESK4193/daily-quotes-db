@@ -1,0 +1,334 @@
+/* 今日の言葉 — 静的版スタイル (Muse版試作の移植) */
+:root {
+  --bg: #f7f4ec;
+  --surface: #fffdf7;
+  --text: #26241f;
+  --muted: #6f6a5e;
+  --frame: #b9d6e9;
+  --accent: #8a6d3b;
+  --badge-a: #2e6b34;
+  --badge-b: #8a6d1d;
+  --badge-c: #8c4a2f;
+  --chip: #ece7da;
+  --shadow: rgba(38, 36, 31, 0.08);
+}
+html[data-theme="dark"] {
+  --bg: #1c1a17;
+  --surface: #26231f;
+  --text: #ece7da;
+  --muted: #a39c8d;
+  --frame: #6e6a61;
+  --accent: #c9a86a;
+  --badge-a: #7fc48a;
+  --badge-b: #d9bc6a;
+  --badge-c: #d99a76;
+  --chip: #35322c;
+  --shadow: rgba(0, 0, 0, 0.4);
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP",
+    "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif;
+  line-height: 1.7;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg);
+  border-bottom: 1px solid var(--frame);
+}
+.header-inner {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 10px 16px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.app-title {
+  font-size: 1.15rem;
+  margin: 0;
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho",
+    "Noto Serif JP", serif;
+  letter-spacing: 0.08em;
+}
+.theme-toggle {
+  border: 1px solid var(--frame);
+  background: var(--surface);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.app-nav {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 8px 16px 10px;
+  display: flex;
+  gap: 8px;
+}
+.nav-btn {
+  flex: 1;
+  border: 1px solid var(--frame);
+  background: transparent;
+  color: var(--muted);
+  border-radius: 8px;
+  padding: 6px 0;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.nav-btn.is-active {
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+  box-shadow: 0 1px 3px var(--shadow);
+}
+
+.app-main {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+}
+
+.home-date {
+  text-align: center;
+  color: var(--muted);
+  margin: 4px 0 16px;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+}
+
+/* ---- 言葉のフレーム (1px罫線、テーマ連動) ---- */
+.quote-frame {
+  border: 1px solid var(--frame);
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 28px 24px 22px;
+  box-shadow: 0 2px 10px var(--shadow);
+  cursor: pointer;
+}
+#detail-frame { cursor: default; }
+
+.quote-original,
+.quote-reading,
+.quote-ja {
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho",
+    "Noto Serif JP", "Source Han Serif JP", serif;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.quote-original { line-height: 1.6; }
+.quote-original.fs-1 { font-size: 2rem; }
+.quote-original.fs-2 { font-size: 1.65rem; }
+.quote-original.fs-3 { font-size: 1.4rem; }
+.quote-original.fs-4 { font-size: 1.2rem; }
+.quote-original.fs-5 { font-size: 1.05rem; }
+.quote-reading {
+  margin-top: 14px;
+  font-size: 1.05rem;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.quote-ja {
+  margin-top: 14px;
+  font-size: 1.12rem;
+  line-height: 1.8;
+}
+
+.frame-meta {
+  margin-top: 22px;
+  border-top: 1px solid var(--frame);
+  padding-top: 14px;
+}
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.badge {
+  font-size: 0.72rem;
+  border-radius: 999px;
+  padding: 2px 10px;
+  border: 1px solid currentColor;
+  letter-spacing: 0.03em;
+}
+.badge-grade-a { color: var(--badge-a); }
+.badge-grade-b { color: var(--badge-b); }
+.badge-grade-c { color: var(--badge-c); }
+.badge-type { color: var(--muted); }
+
+.person-name {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0;
+}
+.person-original {
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin: 0 0 0 8px;
+}
+.person-years {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 2px 0 0;
+}
+.person-bio {
+  margin: 14px 2px 0;
+  color: var(--text);
+  font-size: 0.92rem;
+}
+
+/* ---- アクション行 ---- */
+.action-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 14px 2px 4px;
+}
+.fav-btn {
+  border: 1px solid var(--frame);
+  background: var(--surface);
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.fav-btn.is-fav { font-weight: 700; }
+.share-link {
+  color: var(--accent);
+  font-size: 0.9rem;
+  text-decoration: none;
+  border: 1px solid var(--frame);
+  background: var(--surface);
+  border-radius: 999px;
+  padding: 6px 14px;
+}
+.progress {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* ---- セクション ---- */
+.section { margin-top: 26px; }
+.section-title {
+  font-size: 0.85rem;
+  color: var(--accent);
+  letter-spacing: 0.12em;
+  margin: 0 0 8px;
+  border-bottom: 1px solid var(--frame);
+  padding-bottom: 4px;
+}
+.body-text {
+  margin: 0;
+  font-size: 0.97rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag-chip {
+  background: var(--chip);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+/* ---- 一覧 ---- */
+.list { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+.list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--frame);
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  color: var(--text);
+  font: inherit;
+}
+.list-item-main { flex: 1; min-width: 0; }
+.list-item-quote {
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho",
+    "Noto Serif JP", serif;
+  font-size: 0.98rem;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.list-item-sub {
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin: 4px 0 0;
+}
+.list-item .badge { flex-shrink: 0; margin-top: 2px; }
+.list-item .fav-btn { flex-shrink: 0; padding: 4px 10px; font-size: 0.85rem; }
+
+.back-btn {
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 4px 0 12px;
+}
+
+/* ---- 検索 ---- */
+.search-box { display: flex; flex-direction: column; gap: 10px; }
+.search-input {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 1rem;
+  border: 1px solid var(--frame);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+}
+.search-filters { display: flex; gap: 12px; flex-wrap: wrap; }
+.search-filters label {
+  font-size: 0.82rem;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.search-select {
+  padding: 6px 8px;
+  border: 1px solid var(--frame);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.9rem;
+}
+.result-count { color: var(--muted); font-size: 0.85rem; margin: 12px 0 0; }
+.empty-note { color: var(--muted); text-align: center; margin-top: 32px; }
+
+.app-footer {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0 16px 32px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .quote-frame { padding: 22px 16px 18px; }
+  .quote-original.fs-1 { font-size: 1.7rem; }
+  .quote-original.fs-2 { font-size: 1.45rem; }
+}
