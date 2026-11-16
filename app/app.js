@@ -1,5 +1,6 @@
 /* 今日の言葉 — 静的版アプリ本体
  * 前半は端末非依存のコアロジック (Nodeでの検証にも使う)、後半がブラウザUI。
+ * UIは Muse版 (App.tsx) の構成に一致させた移植。唯一の差分は ◀▶ 行の省略。
  */
 (function () {
   'use strict';
@@ -8,7 +9,7 @@
 
   var GROUPS = [
     '政治・社会', '哲学・思想', '文学', '宗教・精神',
-    '芸術・音楽・映画', '科学・学問', '芸能・スポーツ', 'その他'
+    '科学・学問', '芸術・音楽・映画', '芸能・スポーツ', 'その他'
   ];
 
   var KEYS = {
@@ -80,9 +81,9 @@
       state = { order: shuffle(ids, rng), pos: 0, lastDate: todayStr, cycle: 1 };
       fresh = true;
     } else {
-      var before = state.order.join('');
+      var before = state.order.join(' ');
       state.order = reconcileOrder(state.order, ids, rng);
-      if (state.order.join('') !== before) {
+      if (state.order.join(' ') !== before) {
         if (state.pos >= state.order.length) state.pos = state.order.length - 1;
         if (state.pos < 0) state.pos = 0;
       }
@@ -153,35 +154,48 @@
     });
   }
 
-  /* ---- 表示用ヘルパー ---- */
+  /* ---- 表示用ヘルパー (Muse版の文言に一致) ---- */
   function gradeLabel(grade) {
     if (grade === 'A') return 'A 出典確実';
     if (grade === 'B') return 'B 伝承あり';
-    return 'C 〜の言葉として伝わる';
+    return 'C 帰属に疑義';
   }
   function typeLabel(type) {
-    if (type === 'meigen_mayo') return '迷言';
+    if (type === 'meigen_mayo') return '迷言寄りの名言';
     if (type === 'dokugen') return '毒のある言葉';
     return '名言';
   }
   function isJapaneseOriginal(q) {
     return (q.language || '').indexOf('日本語') >= 0;
   }
-  /* 原文の長さで5段階 */
-  function fontSizeClass(q) {
-    var len = (q.quote_original || '').length;
+  function mainText(q) {
+    return isJapaneseOriginal(q) ? q.quote_original : (q.quote_ja || q.quote_original);
+  }
+  /* 主役テキストの長さで5段階 (17–30px) */
+  function fontSizeClass(text) {
+    var len = (text || '').length;
     if (len <= 25) return 'fs-1';
     if (len <= 50) return 'fs-2';
     if (len <= 90) return 'fs-3';
     if (len <= 150) return 'fs-4';
     return 'fs-5';
   }
+  /* 外国語の原文は小さめの4段階 (15–20px) */
+  function originalSizeClass(text) {
+    var len = (text || '').length;
+    if (len <= 40) return 'os-1';
+    if (len <= 90) return 'os-2';
+    if (len <= 160) return 'os-3';
+    return 'os-4';
+  }
+  function attribution(q) {
+    return q.grade === 'C' ? q.person_ja + 'の言葉として伝わる' : q.person_ja;
+  }
   function shareText(q) {
-    var text = isJapaneseOriginal(q) ? q.quote_original : (q.quote_ja || q.quote_original);
-    return text + ' ― ' + q.person_ja;
+    return '『' + mainText(q) + '』\n— ' + attribution(q) + '\n#今日の言葉';
   }
   function shareUrl(q) {
-    return 'https://x.com/intent/tweet?text=' + encodeURIComponent(shareText(q));
+    return 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(shareText(q));
   }
   function todayString(d) {
     d = d || new Date();
@@ -197,8 +211,10 @@
     getFavorites: getFavorites, isFavorite: isFavorite, toggleFavorite: toggleFavorite,
     getHistory: getHistory, searchQuotes: searchQuotes,
     gradeLabel: gradeLabel, typeLabel: typeLabel,
-    isJapaneseOriginal: isJapaneseOriginal, fontSizeClass: fontSizeClass,
-    shareText: shareText, shareUrl: shareUrl, todayString: todayString
+    isJapaneseOriginal: isJapaneseOriginal, mainText: mainText,
+    fontSizeClass: fontSizeClass, originalSizeClass: originalSizeClass,
+    attribution: attribution, shareText: shareText, shareUrl: shareUrl,
+    todayString: todayString
   };
 
   if (typeof module !== 'undefined' && module.exports) {
@@ -240,7 +256,7 @@
     $('theme-toggle').textContent =
       'テーマ：' + (pref === 'auto' ? '端末' : pref === 'light' ? 'ライト' : 'ダーク');
     var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', dark ? '#1c1a17' : '#f7f4ec');
+    if (meta) meta.setAttribute('content', dark ? '#141311' : '#faf8f3');
   }
   $('theme-toggle').addEventListener('click', function () {
     var order = ['auto', 'light', 'dark'];
@@ -256,12 +272,9 @@
     ['home', 'detail', 'search', 'favorites', 'history'].forEach(function (v) {
       $('view-' + v).hidden = v !== view;
     });
-    document.querySelectorAll('.nav-btn').forEach(function (b) {
-      b.classList.toggle('is-active', b.getAttribute('data-nav') === view);
-    });
     window.scrollTo(0, 0);
   }
-  document.querySelectorAll('.nav-btn').forEach(function (b) {
+  document.querySelectorAll('[data-nav]').forEach(function (b) {
     b.addEventListener('click', function () {
       var v = b.getAttribute('data-nav');
       if (v === 'search') renderSearch();
@@ -271,27 +284,47 @@
     });
   });
 
-  /* ---- 言葉フレームの描画 (ホーム/詳細 共通) ---- */
+  /* ---- 言葉フレームの描画 (ホーム/詳細 共通、Muse版 QuoteText の順序) ---- */
   function renderFrame(container, q) {
     container.textContent = '';
-    container.appendChild(el('p', 'quote-original ' + fontSizeClass(q), q.quote_original));
-    if (q.quote_reading) {
-      container.appendChild(el('p', 'quote-reading', q.quote_reading));
-    }
-    if (!isJapaneseOriginal(q) && q.quote_ja && q.quote_ja !== q.quote_original) {
-      container.appendChild(el('p', 'quote-ja', q.quote_ja));
+    if (isJapaneseOriginal(q)) {
+      container.appendChild(el('p', 'quote-main ' + fontSizeClass(q.quote_original), q.quote_original));
+    } else {
+      container.appendChild(el('p', 'quote-original ' + originalSizeClass(q.quote_original), q.quote_original));
+      if (q.quote_reading) {
+        var rw = el('div', 'reading-wrap');
+        rw.appendChild(el('span', 'reading-label', '書き下し'));
+        rw.appendChild(el('p', 'quote-reading', q.quote_reading));
+        container.appendChild(rw);
+      }
+      if (q.quote_ja && q.quote_ja !== q.quote_original) {
+        container.appendChild(el('p', 'quote-main ' + fontSizeClass(q.quote_ja), q.quote_ja));
+      }
+      if (q.language) {
+        container.appendChild(el('p', 'origin-line', '原文：' + q.language));
+      }
     }
     var meta = el('div', 'frame-meta');
     var badges = el('div', 'badge-row');
-    badges.appendChild(el('span', 'badge badge-grade-' + q.grade.toLowerCase(), gradeLabel(q.grade)));
-    badges.appendChild(el('span', 'badge badge-type', typeLabel(q.type)));
+    badges.appendChild(el('span',
+      'badge' + (q.grade === 'C' ? ' badge-grade-c' : ''), gradeLabel(q.grade)));
+    badges.appendChild(el('span', 'meta-text', typeLabel(q.type)));
+    if (q.category || q.region) {
+      badges.appendChild(el('span', 'meta-text',
+        [q.category, q.region].filter(Boolean).join('・')));
+    }
     meta.appendChild(badges);
     var nameLine = el('p', 'person-name', q.person_ja);
+    if (q.grade === 'C') {
+      nameLine.appendChild(el('span', 'c-note', 'の言葉として伝わる'));
+    }
     if (q.person_original && q.person_original !== q.person_ja) {
       nameLine.appendChild(el('span', 'person-original', q.person_original));
     }
+    if (q.person_years) {
+      nameLine.appendChild(el('span', 'person-years', q.person_years));
+    }
     meta.appendChild(nameLine);
-    if (q.person_years) meta.appendChild(el('p', 'person-years', q.person_years));
     container.appendChild(meta);
   }
 
@@ -312,18 +345,11 @@
     renderFrame($('home-frame'), q);
     favButton($('home-fav'), q.id);
     $('home-share').href = shareUrl(q);
-    $('home-progress').textContent = todayResult.position + ' / ' + todayResult.total + ' 件目';
     $('home-meaning').textContent = q.meaning;
     $('home-source').textContent = q.source;
   }
-  $('home-frame').addEventListener('click', function () {
+  $('home-tap').addEventListener('click', function () {
     if (todayResult) openDetail(todayResult.quote.id, 'home');
-  });
-  $('home-frame').addEventListener('keydown', function (e) {
-    if ((e.key === 'Enter' || e.key === ' ') && todayResult) {
-      e.preventDefault();
-      openDetail(todayResult.quote.id, 'home');
-    }
   });
   $('home-fav').addEventListener('click', function () {
     if (!todayResult) return;
@@ -331,7 +357,7 @@
     favButton($('home-fav'), todayResult.quote.id);
   });
 
-  /* ---- 詳細 ---- */
+  /* ---- 詳細 (Muse版 DetailView の見出しと順序) ---- */
   function section(title, text) {
     var wrap = el('div', 'section');
     wrap.appendChild(el('h2', 'section-title', title));
@@ -344,8 +370,14 @@
     detailId = id;
     detailBack = back || 'home';
     renderFrame($('detail-frame'), q);
-    $('detail-bio').textContent = q.person_bio || '';
-    $('detail-bio').style.display = q.person_bio ? '' : 'none';
+
+    var bioWrap = $('detail-bio-wrap');
+    if (q.person_bio) {
+      bioWrap.hidden = false;
+      $('detail-bio').textContent = q.person_bio;
+    } else {
+      bioWrap.hidden = true;
+    }
     favButton($('detail-fav'), q.id);
     $('detail-share').href = shareUrl(q);
 
@@ -354,13 +386,14 @@
     box.appendChild(section('詳しい解説', q.meaning));
     box.appendChild(section('機知に富んだ解説', q.critical_view));
     box.appendChild(section('裏話', q.background));
-    var src = section('出典の詳細', q.source_detail);
-    src.querySelector('.body-text').textContent = q.source + '\n' + q.source_detail;
+    var src = el('div', 'section');
+    src.appendChild(el('h2', 'section-title', '出典'));
+    src.appendChild(el('p', 'body-text', q.source));
+    if (q.source_detail) src.appendChild(el('p', 'body-text', q.source_detail));
     box.appendChild(src);
     box.appendChild(section('確度の根拠', q.authenticity_note));
     if (q.tags && q.tags.length) {
       var tagWrap = el('div', 'section');
-      tagWrap.appendChild(el('h2', 'section-title', 'タグ'));
       var row = el('div', 'tag-row');
       q.tags.forEach(function (t) { row.appendChild(el('span', 'tag-chip', t)); });
       tagWrap.appendChild(row);
@@ -375,6 +408,7 @@
     sameBox.textContent = '';
     if (same.length) {
       sameWrap.hidden = false;
+      $('detail-same-title').textContent = '同じ人物の言葉（' + same.length + '件）';
       same.forEach(function (o) { sameBox.appendChild(listItem(o, null)); });
     } else {
       sameWrap.hidden = true;
@@ -396,12 +430,12 @@
     var item = el('button', 'list-item');
     item.type = 'button';
     var main = el('div', 'list-item-main');
-    var shown = isJapaneseOriginal(q) ? q.quote_original : (q.quote_ja || q.quote_original);
-    main.appendChild(el('p', 'list-item-quote', shown));
+    main.appendChild(el('p', 'list-item-quote', mainText(q)));
     main.appendChild(el('p', 'list-item-sub',
       q.person_ja + (subText ? ' ・ ' + subText : '')));
     item.appendChild(main);
-    item.appendChild(el('span', 'badge badge-grade-' + q.grade.toLowerCase(), q.grade));
+    item.appendChild(el('span',
+      'badge' + (q.grade === 'C' ? ' badge-grade-c' : ''), q.grade));
     item.addEventListener('click', function () { openDetail(q.id, currentView); });
     return item;
   }
