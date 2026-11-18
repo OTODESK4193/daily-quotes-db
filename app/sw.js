@@ -1,5 +1,5 @@
 /* 今日の言葉 — Service Worker (静的版 v1) */
-var CACHE_NAME = 'quotes-static-v2';
+var CACHE_NAME = 'quotes-static-v3';
 var CORE_FILES = [
   './',
   './index.html',
